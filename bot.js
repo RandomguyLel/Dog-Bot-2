@@ -20,7 +20,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 client.on('ready', async() => 
 {
   console.log('Bot is online!');
-  client.user.setActivity('Running DogBotv2 Beta');
+  client.user.setActivity('DogBotv2 Beta');
   //const guild = client.guilds.cache.find(guild => guild.name === GUILD);
 
   try
