@@ -107,7 +107,7 @@ client.on('messageCreate', async message => {
 
     await message.delete();
     const sentMessage = await message.channel.send({
-      content: `Posted by ${author}: **${trimmedTextBeforeLink}** **${trimmedTextAfterLink}**\n[Media](${modifiedLink})`,
+      content: `Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${modifiedLink})`,
       flags: [4096]
     })
     const messageId = sentMessage.id;
@@ -120,7 +120,7 @@ client.on('messageCreate', async message => {
         const retryLink = `${modifiedLink}?embed-retry`;
         await fetchedMessage.delete();
         await message.channel.send({
-        content: `(:arrows_counterclockwise:Embed retry) Posted by ${author}: **${trimmedTextBeforeLink}** **${trimmedTextAfterLink}**\n[Media](${retryLink})`,
+        content: `(:arrows_counterclockwise:Embed retry) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`,
         flags: [4096]
         })
       }
