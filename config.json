@@ -1,0 +1,18 @@
+{
+  "platform": {
+    "instagram": "instagramez.com",
+    "twitter": "vxtwitter.com",
+    "x": "fixvx.com",
+    "tiktok": "tiktokez.com",
+    "vm.tiktok": "vm.vxtiktok.com",
+    "reddit": "rxddit.com"
+  },
+  "regexPatterns": {
+    "instagram": "(https?:\\/\\/(?:www\\.)?instagram\\.com\\/\\S+)",
+    "twitter": "(https?:\\/\\/(?:www\\.)?twitter\\.com\\/\\S+)",
+    "x": "(https?:\\/\\/(?:www\\.)?x\\.com\\/\\S+)",
+    "tiktok": "(https?:\\/\\/(?:www\\.)?tiktok\\.com\\/\\S+)",
+    "vm.tiktok":"(https?:\\/\\/(?:www\\.)?vm\\.tiktok\\.com\\/\\S+)",
+    "reddit": "(https?:\\/\\/(?:www\\.)?reddit\\.com\\/\\S+)"
+  }
+}
