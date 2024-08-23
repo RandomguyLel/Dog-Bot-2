@@ -74,21 +74,21 @@ client.on('messageCreate', async message => {
   //console.log("message detected:", message.content);
   for (const [key, pattern] of Object.entries(regexPatterns)) {
     const regex = new RegExp(pattern);
-    console.log("testing for pattern:", pattern);
+    //console.log("testing for pattern:", pattern);
     if (regex.test(message.content)) {
       console.log('message valid for pattern:', pattern, 'converting start');
       const match = message.content.match(regex);
       if (match) {
         const originalLink = match[0];
         const replacement = platforms[key];
-        console.log('originalLink:', originalLink);
-        console.log('replacement:', replacement);
+        //console.log('originalLink:', originalLink);
+        //console.log('replacement:', replacement);
         // Adjust the regex to capture the domain and path separately
         const domainRegex = new RegExp(`(https?://(?:[a-zA-Z0-9-]+\\.)?)(${key}\\.com)(/\\S*)`);
 
-        console.log('domainRegex:', domainRegex);
+        //console.log('domainRegex:', domainRegex);
         modifiedLink = originalLink.replace(domainRegex, `$1${replacement}$3`);
-        console.log('modifiedLink:', modifiedLink);
+        //console.log('modifiedLink:', modifiedLink);
         message.content = message.content.replace(originalLink, modifiedLink);
       }
       break;
