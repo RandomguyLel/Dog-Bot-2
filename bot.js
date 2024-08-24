@@ -160,33 +160,66 @@ client.on('messageCreate', async message => {
             const $ = cheerio.load(data);
 
             const title = $('title').text();
-            const description = $('#msg_div_msg').text().trim() || 'No description available'; 
-            const images = [];
+            const keywords = ['VIN kods:','Valsts numura zīme:','Parādīt vin kodu','Aprēķināt apdrošināšanu']; // Add your specific keywords here
 
+            const limitDescriptionByKeywords = (text, keywords) => {
+                for (const keyword of keywords) {
+                    const index = text.indexOf(keyword);
+                    if (index !== -1) {
+                        return text.substring(0, index + keyword.length);
+                    }
+                }
+                return text;
+            };
+
+            let description = $('#msg_div_msg').text().trim() || 'No description available'; 
+
+            // Limit the description by keywords
+            description = limitDescriptionByKeywords(description, keywords);           
+            const maxDescriptionLength = 5000; // Limit the description to 5500 characters
+            if (description.length > maxDescriptionLength) {
+                description = description.substring(0, maxDescriptionLength) + '...';
+            }
+          //console.log(`description length: ${description.length}`);
+          const images = [];
+          
             $('img').each((i, elem) => {
+              if (images.length >= 4) return false; // Stop collecting images after the first 4
               let src = $(elem).attr('src');
               //console.log(`Found image src: ${src}`);
+
               if (src && src.includes('gallery') && src.endsWith('.jpg')) {
-                    src = src.replace('.t.jpg', '.800.jpg');
-                    images.push(new URL(src, url).href);
+                  src = src.replace('.t.jpg', '.800.jpg');
+                images.push(new URL(src, url).href);
                 //console.log(`image to embed: ${images}`);
-                }
+              }
             });
+
 
             if (images.length === 0) {
                 images.push('https://httpstatusdogs.com/img/404.jpg'); // Provide a default image URL if no image is found
             }
 
-            const embeds = images.map((image, index) => {
-              return new EmbedBuilder()
-                    .setAuthor({name: `Posted by: ${author}`})
-                    .setTitle(`${title}`)
-                    .setDescription(description)
+            const mainEmbed = new EmbedBuilder()
+                .setAuthor({ name: `Posted by: ${author}` })
+                .setTitle(`${title}`)
+                .setDescription(description)
+                .setURL(url)
+                .setColor(0x00AE86);
+
+            const imageEmbeds = images.map(image => {
+                return new EmbedBuilder()
                     .setImage(image)
                     .setURL(url)
                     .setColor(0x00AE86);
             });
-          await message.delete();
+
+            const embeds = [mainEmbed, ...imageEmbeds];
+            const totalCharacters = embeds.reduce((sum, embed) => sum + (embed.data.description ? embed.data.description.length : 0), 0);
+            //console.log(`embed total characters: ${totalCharacters}`);
+            //console.log(JSON.stringify(embeds, null, 2));
+
+            await message.delete();
             await message.channel.send({ embeds });
         } catch (error) {
             console.error('Error scraping the webpage:', error);
