@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection} = require('discord.js');
+const { Client, GatewayIntentBits, Collection, EmbedBuilder} = require('discord.js');
 
 const client = new Client({
   intents: [
@@ -12,7 +12,9 @@ require('dotenv').config();
 const fs = require('fs');
 const config = require("./config.json");
 //const { platform } = require('os');
-
+//Web scraping stuff
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 //const GUILD = process.env.DISCORD_GUILD;
@@ -140,6 +142,57 @@ client.on('messageCreate', async message => {
   if (message.content.startsWith('pips')) {
     await message.channel.send('pats ne labaks');
   }
+});
+
+
+
+//Website scraping experiment
+
+client.on('messageCreate', async message => {
+    const urlRegex = /https:\/\/(www\.ss\.com|ss\.com|m\.ss\.com)\/.*/;
+  const match = message.content.match(urlRegex);
+  const author = message.author.username;
+  //console.log('ss.com scraper triggered');
+    if (match) {
+        try {
+            const url = match[0];
+            const { data } = await axios.get(url);
+            const $ = cheerio.load(data);
+
+            const title = $('title').text();
+            const description = $('#msg_div_msg').text().trim() || 'No description available'; 
+            const images = [];
+
+            $('img').each((i, elem) => {
+              let src = $(elem).attr('src');
+              //console.log(`Found image src: ${src}`);
+              if (src && src.includes('gallery') && src.endsWith('.jpg')) {
+                    src = src.replace('.t.jpg', '.800.jpg');
+                    images.push(new URL(src, url).href);
+                //console.log(`image to embed: ${images}`);
+                }
+            });
+
+            if (images.length === 0) {
+                images.push('https://httpstatusdogs.com/img/404.jpg'); // Provide a default image URL if no image is found
+            }
+
+            const embeds = images.map((image, index) => {
+              return new EmbedBuilder()
+                    .setAuthor({name: `Posted by: ${author}`})
+                    .setTitle(`${title}`)
+                    .setDescription(description)
+                    .setImage(image)
+                    .setURL(url)
+                    .setColor(0x00AE86);
+            });
+          await message.delete();
+            await message.channel.send({ embeds });
+        } catch (error) {
+            console.error('Error scraping the webpage:', error);
+            await message.channel.send('Failed to scrape the webpage.');
+        }
+    }
 });
 
 client.login(TOKEN);
