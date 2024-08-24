@@ -15,6 +15,7 @@ const config = require("./config.json");
 //Web scraping stuff
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { isUndefined } = require('util');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 //const GUILD = process.env.DISCORD_GUILD;
@@ -149,18 +150,34 @@ client.on('messageCreate', async message => {
 //Website scraping experiment
 
 client.on('messageCreate', async message => {
-    const urlRegex = /https:\/\/(www\.ss\.com|ss\.com|m\.ss\.com)\/.*/;
-  const match = message.content.match(urlRegex);
+  const mobileUrlRegex = /https?:\/\/m\.ss\.com\/\S+/ ;
+  const normalurlRegex = /https?:\/\/(?:www\.)?ss\.com\/\S+/;
+  let match = message.content.match(normalurlRegex);
   const author = message.author.username;
-  //console.log('ss.com scraper triggered');
+  
+  if (!match) {
+      console.log('checking if mobile link');
+      match = message.content.match(mobileUrlRegex);
+      if (match) {
+          // Replace mobile URL with normal URL
+        console.log('indeed is mobile link')
+        match[0] = match[0].replace('https://m.ss.com', 'https://www.ss.com');
+        console.log(`message: ${message.content}`);
+      }
+    }
     if (match) {
         try {
             const url = match[0];
-            const { data } = await axios.get(url);
+          const { data, original_url } = await axios.get(url);
             const $ = cheerio.load(data);
 
             const title = $('title').text();
-            const keywords = ['VIN kods:','Valsts numura zīme:','Parādīt vin kodu','Aprēķināt apdrošināšanu']; // Add your specific keywords here
+            const keywords = ['VIN kods:', 'Valsts numura zīme:', 'Parādīt vin kodu', 'Aprēķināt apdrošināšanu']; // Add your specific keywords here
+        
+          // Extract text before and after the link
+          const beforeText = message.content.split(url)[0].trim();
+          let afterText = message.content.split(url)[1]?.trim();
+          if (afterText === undefined){afterText = (` `)};
 
             const limitDescriptionByKeywords = (text, keywords) => {
                 for (const keyword of keywords) {
@@ -180,28 +197,24 @@ client.on('messageCreate', async message => {
             if (description.length > maxDescriptionLength) {
                 description = description.substring(0, maxDescriptionLength) + '...';
             }
-          //console.log(`description length: ${description.length}`);
           const images = [];
           
             $('img').each((i, elem) => {
               if (images.length >= 4) return false; // Stop collecting images after the first 4
               let src = $(elem).attr('src');
-              //console.log(`Found image src: ${src}`);
 
               if (src && src.includes('gallery') && src.endsWith('.jpg')) {
                   src = src.replace('.t.jpg', '.800.jpg');
                 images.push(new URL(src, url).href);
-                //console.log(`image to embed: ${images}`);
               }
             });
-
 
             if (images.length === 0) {
                 images.push('https://httpstatusdogs.com/img/404.jpg'); // Provide a default image URL if no image is found
             }
-
+            
             const mainEmbed = new EmbedBuilder()
-                .setAuthor({ name: `Posted by: ${author}` })
+                .setAuthor({ name: `Posted by: ${author}\n${beforeText} ${afterText}` })
                 .setTitle(`${title}`)
                 .setDescription(description)
                 .setURL(url)
@@ -215,12 +228,8 @@ client.on('messageCreate', async message => {
             });
 
             const embeds = [mainEmbed, ...imageEmbeds];
-            const totalCharacters = embeds.reduce((sum, embed) => sum + (embed.data.description ? embed.data.description.length : 0), 0);
-            //console.log(`embed total characters: ${totalCharacters}`);
-            //console.log(JSON.stringify(embeds, null, 2));
-
             await message.delete();
-            await message.channel.send({ embeds });
+            await message.channel.send({ embeds, flags: [4096] });
         } catch (error) {
             console.error('Error scraping the webpage:', error);
             await message.channel.send('Failed to scrape the webpage.');
