@@ -156,7 +156,7 @@ client.on('messageCreate', async message => {
   const author = message.author.username;
   
   if (!match) {
-      console.log('checking if mobile link');
+      //console.log('checking if mobile link');
       match = message.content.match(mobileUrlRegex);
       if (match) {
           // Replace mobile URL with normal URL
