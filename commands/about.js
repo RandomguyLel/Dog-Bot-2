@@ -15,8 +15,8 @@ module.exports = {
         .setDescription("Introducing Dog bot!\nA simple utility bot that converts social links to their embed-friendly counterparts.\nAnd may or may not do other shenanigans.\n\nWhat started as a barely functioning python bot,\nNow premiering as an even more unstable v2 version with some extras, now running on discord.js v14.15.3\n\nA totally original idea that you totally won't find anywhere on Github.\n\n\nProudly prompt-engineered using Copilot (Another word for developed) by <@217324558489747456>\n\n[Github Page](https://github.com/RandomguyLel/Dog-Bot-2) - Good luck understanding anything (I certainly can't).")
         .addFields(
             {
-            name: "Contributors - TBD",
-            value: "<@bonk>",
+            name: "Contributors - Probably you reading this right now?",
+            //value: "<@bonk>",
             inline: false
             },
         )
