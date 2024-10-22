@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField } = require('discord.js');
 const fs = require('fs');
 let config = require('../config.json');
 
@@ -6,10 +6,13 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('platformupdate')
     .setDescription('Update an existing platform or its regex pattern')
-    .addStringOption(option => option.setName('platform').setDescription('Platform to update\nCurrently supported platforms: x, twitter, instagram, reddit, tiktok').setRequired(true))
+    .addStringOption(option => option.setName('platform').setDescription('Platform to update\nCheck /platformlist for supported platforms').setRequired(true))
     .addStringOption(option => option.setName('new-provider').setDescription('New provider for the platform').setRequired(false))
     .addStringOption(option => option.setName('new-regex-pattern').setDescription('New regex pattern for the platform').setRequired(false)),
   async execute(interaction) {
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+        return interaction.reply('You need to have ManageMessages permission to use this command. womp womp');
+      }
     const platform = interaction.options.getString('platform');
     const newProvider = interaction.options.getString('new-provider');
     const newRegexPattern = interaction.options.getString('new-regex-pattern');

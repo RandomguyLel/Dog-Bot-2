@@ -23,7 +23,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 client.on('ready', async() => 
 {
   console.log('Bot is online!');
-  client.user.setActivity('DogBot v2 Beta');
+  client.user.setActivity('DogBot v2');
   //const guild = client.guilds.cache.find(guild => guild.name === GUILD);
 
   try
@@ -92,6 +92,11 @@ client.on('messageCreate', async message => {
         //console.log('domainRegex:', domainRegex);
         modifiedLink = originalLink.replace(domainRegex, `$1${replacement}$3`);
         //console.log('modifiedLink:', modifiedLink);
+
+        // Remove 'www.' if it exists before the domain
+        if (modifiedLink.includes('www.')) {
+          modifiedLink = modifiedLink.replace('www.', '');
+        }
         message.content = message.content.replace(originalLink, modifiedLink);
       }
       break;
@@ -109,26 +114,38 @@ client.on('messageCreate', async message => {
     // Known issue: if link contains underscore, it messes up whole hyperlink formatting
 
     await message.delete();
-    const sentMessage = await message.channel.send({
+    let sentMessage = await message.channel.send({
       content: `Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${modifiedLink})`,
       flags: [4096]
     })
-    const messageId = sentMessage.id;
+    let messageId = sentMessage.id;
 
-    // Check if embed is created within 10 seconds
-    setTimeout(async () => {
-      const fetchedMessage = await message.channel.messages.fetch(messageId);
-      if (fetchedMessage.embeds.length === 0) {
-        console.log('Embed not created, retrying...');
-        const retryLink = `${modifiedLink}?embed-retry`;
-        await fetchedMessage.delete();
-        await message.channel.send({
-        content: `(:arrows_counterclockwise:Embed retry) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`,
-        flags: [4096]
-        })
-      }
-      else console.log('Embed success')
-    }, 10000); // 10 seconds
+
+      //Check if embed got created
+        const retryEmbed = async (retryCount) => {
+        if (retryCount > 2) return; // Limit retries to 2
+        setTimeout(async () => {
+            const fetchedMessage = await message.channel.messages.fetch(messageId);
+            if (fetchedMessage.embeds.length === 0) {
+                console.log('Embed not created, retrying...');
+                const retryLink = `${modifiedLink}?embed-retry-${retryCount}`;
+                await fetchedMessage.delete();
+                const retryContent = retryCount === 2 ? 
+                    `(:warning: Embed failed after 3 tries - Post could be age restriced, Dog could be lazy or it's just a skill issue) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})` :
+                    `(:arrows_counterclockwise: Embed retry) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`;
+                const newMessage = await message.channel.send({
+                    content: retryContent,
+                    flags: [4096]
+                });
+                messageId = newMessage.id;
+                retryEmbed(retryCount + 1); // Retry again
+            } else {
+                console.log('Embed success');
+            }
+        }, 10000); // 10 seconds
+    };
+
+    retryEmbed(1); // Start with the first retry
     
   }
      

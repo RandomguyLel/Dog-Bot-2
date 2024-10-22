@@ -5,14 +5,16 @@
     "x": "fixvx.com",
     "tiktok": "tiktokez.com",
     "vm.tiktok": "vm.vxtiktok.com",
-    "reddit": "rxddit.com"
+    "reddit": "rxddit.com",
+    "youtube": "yt.cdn.13373333.one"
   },
   "regexPatterns": {
     "instagram": "(https?:\\/\\/(?:www\\.)?instagram\\.com\\/\\S+)",
     "twitter": "(https?:\\/\\/(?:www\\.)?twitter\\.com\\/\\S+)",
     "x": "(https?:\\/\\/(?:www\\.)?x\\.com\\/\\S+)",
     "tiktok": "(https?:\\/\\/(?:www\\.)?tiktok\\.com\\/\\S+)",
-    "vm.tiktok":"(https?:\\/\\/(?:www\\.)?vm\\.tiktok\\.com\\/\\S+)",
-    "reddit": "(https?:\\/\\/(?:www\\.)?reddit\\.com\\/\\S+)"
+    "vm.tiktok": "(https?:\\/\\/(?:www\\.)?vm\\.tiktok\\.com\\/\\S+)",
+    "reddit": "(https?:\\/\\/(?:www\\.)?reddit\\.com\\/\\S+)",
+    "youtube": "(https?:\\/\\/(?:www\\.)?youtube\\.com\\/\\S+)"
   }
 }
