@@ -1,4 +1,6 @@
 {
+  "ownerId": "217324558489747456",
+  "status": "Spooky Dog Season!",
   "platform": {
     "instagram": "instagramez.com",
     "twitter": "vxtwitter.com",
@@ -6,7 +8,8 @@
     "tiktok": "tiktokez.com",
     "vm.tiktok": "vm.vxtiktok.com",
     "reddit": "rxddit.com",
-    "youtube": "yt.cdn.13373333.one"
+    "youtube": "koutu.be",
+    "youtu.be": "koutu.be"
   },
   "regexPatterns": {
     "instagram": "(https?:\\/\\/(?:www\\.)?instagram\\.com\\/\\S+)",
@@ -15,6 +18,7 @@
     "tiktok": "(https?:\\/\\/(?:www\\.)?tiktok\\.com\\/\\S+)",
     "vm.tiktok": "(https?:\\/\\/(?:www\\.)?vm\\.tiktok\\.com\\/\\S+)",
     "reddit": "(https?:\\/\\/(?:www\\.)?reddit\\.com\\/\\S+)",
-    "youtube": "(https?:\\/\\/(?:www\\.)?youtube\\.com\\/\\S+)"
+    "youtube": "(https?:\\/\\/(?:www\\.)?youtube\\.com\\/\\S+)",
+    "youtu.be": "(https?:\\/\\/(?:www\\.)?youtu\\.be\\/\\S+)"
   }
 }

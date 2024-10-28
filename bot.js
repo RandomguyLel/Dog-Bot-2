@@ -8,10 +8,10 @@ const client = new Client({
   ]
 });
 require('dotenv').config();
-//require('log-timestamp');
+
 const fs = require('fs');
 const config = require("./config.json");
-//const { platform } = require('os');
+
 //Web scraping stuff
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -23,7 +23,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 client.on('ready', async() => 
 {
   console.log('Bot is online!');
-  client.user.setActivity('DogBot v2');
+  client.user.setActivity(config.status);
   //const guild = client.guilds.cache.find(guild => guild.name === GUILD);
 
   try
@@ -43,14 +43,14 @@ client.on('interactionCreate', async interaction => {
     
     const { commandName } = interaction;
     const command = client.commands.get(commandName);
-    
+  
     if (!command) return;
     
      try {
-    console.log(`Executing command: ${commandName} by ${interaction.user.tag} (ID: ${interaction.user.id})`);
-    await command.execute(interaction);
-    console.log(`Command executed: ${commandName} by ${interaction.user.tag}`);
-  } catch (error) {
+      console.log(`Executing command: ${commandName} by ${interaction.user.tag} (ID: ${interaction.user.id})`);
+      await command.execute(interaction, client);
+      console.log(`Command executed: ${commandName} by ${interaction.user.tag}`);
+    } catch (error) {
     console.error(`Error executing command ${commandName}:`, error);
     await interaction.reply({ content: 'An error occurred while executing this command.', ephemeral: true });
   }
@@ -61,8 +61,8 @@ client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles)
 {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.data.name, command);
 }
 
 
@@ -87,7 +87,7 @@ client.on('messageCreate', async message => {
         //console.log('originalLink:', originalLink);
         //console.log('replacement:', replacement);
         // Adjust the regex to capture the domain and path separately
-        const domainRegex = new RegExp(`(https?://(?:[a-zA-Z0-9-]+\\.)?)(${key}\\.com)(/\\S*)`);
+        const domainRegex = new RegExp(`(https?://)([^/]+)(/.*)?`);
 
         //console.log('domainRegex:', domainRegex);
         modifiedLink = originalLink.replace(domainRegex, `$1${replacement}$3`);
