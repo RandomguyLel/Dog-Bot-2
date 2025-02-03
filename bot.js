@@ -71,6 +71,9 @@ for (const file of commandFiles)
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
+  // Add the condition to skip processing if the message starts with '$'
+  if (message.content.startsWith('$')) return;
+  
   const regexPatterns = config.regexPatterns;
   const platforms = config.platform;
   let modifiedLink = null;
