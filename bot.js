@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection, EmbedBuilder} = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events, MessageFlags } = require('discord.js');
 
 const client = new Client({
   intents: [
@@ -10,17 +10,16 @@ const client = new Client({
 require('dotenv').config();
 
 const fs = require('fs');
-const config = require("./config.json");
-
-//Web scraping stuff
-const axios = require('axios');
-const cheerio = require('cheerio');
-const { isUndefined } = require('util');
+const path = require('path');
+const config = require('./config.json');
+const CONFIG_PATH = path.join(__dirname, 'config.json');
+const { handleConfigInteraction } = require('./configModals.js');
+const { handleAdminInteraction } = require('./adminHandlers.js');
+const { handleSsComMessage } = require('./ssScraper.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
-//const GUILD = process.env.DISCORD_GUILD;
 
-client.on('ready', async() => 
+client.on(Events.ClientReady, async () => 
 {
   console.log('Bot is online!');
   client.user.setActivity(config.status);
@@ -38,21 +37,24 @@ client.on('ready', async() =>
 });
 
 
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-    
-    const { commandName } = interaction;
-    const command = client.commands.get(commandName);
-  
-    if (!command) return;
-    
-     try {
-      console.log(`Executing command: ${commandName} by ${interaction.user.tag} (ID: ${interaction.user.id})`);
-      await command.execute(interaction, client);
-      console.log(`Command executed: ${commandName} by ${interaction.user.tag}`);
-    } catch (error) {
+client.on(Events.InteractionCreate, async interaction => {
+  const adminHandled = await handleAdminInteraction(interaction);
+  if (adminHandled) return;
+  const configHandled = await handleConfigInteraction(interaction, client);
+  if (configHandled) return;
+
+  if (!interaction.isCommand()) return;
+
+  const { commandName } = interaction;
+  const command = client.commands.get(commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(interaction, client);
+  } catch (error) {
     console.error(`Error executing command ${commandName}:`, error);
-    await interaction.reply({ content: 'An error occurred while executing this command.', ephemeral: true });
+    await interaction.reply({ content: 'An error occurred while executing this command.', flags: MessageFlags.Ephemeral });
   }
 });
 
@@ -68,17 +70,19 @@ for (const file of commandFiles)
 
 // Social Link Converter stuff start //
 
-client.on('messageCreate', async message => {
+client.on(Events.MessageCreate, async message => {
   if (message.author.bot) return;
 
   // Add the condition to skip processing if the message starts with '$'
   if (message.content.startsWith('$')) return;
-  
+
+  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
   const regexPatterns = config.regexPatterns;
   const platforms = config.platform;
   let modifiedLink = null;
   //console.log("message detected:", message.content);
   for (const [key, pattern] of Object.entries(regexPatterns)) {
+    if (config.enabled && config.enabled[key] === false) continue;
     const regex = new RegExp(pattern);
     //console.log("testing for pattern:", pattern);
     if (regex.test(message.content)) {
@@ -117,44 +121,44 @@ client.on('messageCreate', async message => {
     // Known issue: if link contains underscore, it messes up whole hyperlink formatting
 
     await message.delete();
+    const mediaContent = `Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${modifiedLink})`;
+    // Use normal message (not Components V2) so Discord can unfurl the link; silent to avoid double pings from @mentions
     let sentMessage = await message.channel.send({
-      content: `Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${modifiedLink})`,
-      flags: [4096]
-    })
+      content: mediaContent,
+      flags: MessageFlags.SuppressNotifications
+    });
     let messageId = sentMessage.id;
 
-
-      //Check if embed got created
-        const retryEmbed = async (retryCount) => {
-        if (retryCount > 2) return; // Limit retries to 2
-        setTimeout(async () => {
-            const fetchedMessage = await message.channel.messages.fetch(messageId);
-            if (fetchedMessage.embeds.length === 0) {
-                console.log('Embed not created, retrying...');
-                const retryLink = `${modifiedLink}?embed-retry-${retryCount}`;
-                await fetchedMessage.delete();
-                const retryContent = retryCount === 2 ? 
-                    `(:warning: Embed failed after 3 tries - Post could be age restriced, Dog could be lazy or it's just a skill issue) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})` :
-                    `(:arrows_counterclockwise: Embed retry) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`;
-                const newMessage = await message.channel.send({
-                    content: retryContent,
-                    flags: [4096]
-                });
-                messageId = newMessage.id;
-                retryEmbed(retryCount + 1); // Retry again
-            } else {
-                console.log('Embed success');
-            }
-        }, 10000); // 10 seconds
+    const retryEmbed = async (retryCount) => {
+      if (retryCount > 2) return;
+      setTimeout(async () => {
+        const fetchedMessage = await message.channel.messages.fetch(messageId);
+        if (fetchedMessage.embeds.length === 0) {
+          console.log('Embed not created, retrying...');
+          const retryLink = `${modifiedLink}?embed-retry-${retryCount}`;
+          await fetchedMessage.delete();
+          const retryContent = retryCount === 2
+            ? `(:warning: Embed failed after 3 tries - Post could be age restriced, Dog could be lazy or it's just a skill issue) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`
+            : `(:arrows_counterclockwise: Embed retry) Posted by ${author}: ${trimmedTextBeforeLink} ${trimmedTextAfterLink}\n[Media](${retryLink})`;
+          const newMessage = await message.channel.send({
+            content: retryContent,
+            flags: MessageFlags.SuppressNotifications
+          });
+          messageId = newMessage.id;
+          retryEmbed(retryCount + 1);
+        } else {
+          console.log('Embed success');
+        }
+      }, 11000); // 11 seconds
     };
 
-    retryEmbed(1); // Start with the first retry
+    retryEmbed(1);
     
   }
      
 });
 
-client.on('messageCreate', async message => {
+client.on(Events.MessageCreate, async message => {
     if (message.author.bot) return;
     if (message.content.startsWith('dirst')) {
     await message.channel.send('nedirsies daudz te ja');
@@ -165,96 +169,9 @@ client.on('messageCreate', async message => {
   }
 });
 
-
-
-//Website scraping experiment
-
-client.on('messageCreate', async message => {
-  const mobileUrlRegex = /https?:\/\/m\.ss\.com\/\S+/ ;
-  const normalurlRegex = /https?:\/\/(?:www\.)?ss\.com\/\S+/;
-  let match = message.content.match(normalurlRegex);
-  const author = message.author.username;
-  
-  if (!match) {
-      //console.log('checking if mobile link');
-      match = message.content.match(mobileUrlRegex);
-      if (match) {
-          // Replace mobile URL with normal URL
-        console.log('indeed is mobile link')
-        match[0] = match[0].replace('https://m.ss.com', 'https://www.ss.com');
-        console.log(`message: ${message.content}`);
-      }
-    }
-    if (match) {
-        try {
-            const url = match[0];
-          const { data, original_url } = await axios.get(url);
-            const $ = cheerio.load(data);
-
-            const title = $('title').text();
-            const keywords = ['VIN kods:', 'Valsts numura zīme:', 'Parādīt vin kodu', 'Aprēķināt apdrošināšanu']; // Add your specific keywords here
-        
-          // Extract text before and after the link
-          const beforeText = message.content.split(url)[0].trim();
-          let afterText = message.content.split(url)[1]?.trim();
-          if (afterText === undefined){afterText = (` `)};
-
-            const limitDescriptionByKeywords = (text, keywords) => {
-                for (const keyword of keywords) {
-                    const index = text.indexOf(keyword);
-                    if (index !== -1) {
-                        return text.substring(0, index + keyword.length);
-                    }
-                }
-                return text;
-            };
-
-            let description = $('#msg_div_msg').text().trim() || 'No description available'; 
-
-            // Limit the description by keywords
-            description = limitDescriptionByKeywords(description, keywords);           
-            const maxDescriptionLength = 5000; // Limit the description to 5500 characters
-            if (description.length > maxDescriptionLength) {
-                description = description.substring(0, maxDescriptionLength) + '...';
-            }
-          const images = [];
-          
-            $('img').each((i, elem) => {
-              if (images.length >= 4) return false; // Stop collecting images after the first 4
-              let src = $(elem).attr('src');
-
-              if (src && src.includes('gallery') && src.endsWith('.jpg')) {
-                  src = src.replace('.t.jpg', '.800.jpg');
-                images.push(new URL(src, url).href);
-              }
-            });
-
-            if (images.length === 0) {
-                images.push('https://httpstatusdogs.com/img/404.jpg'); // Provide a default image URL if no image is found
-            }
-            
-            const mainEmbed = new EmbedBuilder()
-                .setAuthor({ name: `Posted by: ${author}\n${beforeText} ${afterText}` })
-                .setTitle(`${title}`)
-                .setDescription(description)
-                .setURL(url)
-                .setColor(0x00AE86);
-
-            const imageEmbeds = images.map(image => {
-                return new EmbedBuilder()
-                    .setImage(image)
-                    .setURL(url)
-                    .setColor(0x00AE86);
-            });
-
-            const embeds = [mainEmbed, ...imageEmbeds];
-            await message.delete();
-            await message.channel.send({ embeds, flags: [4096] });
-        } catch (error) {
-            console.error('Error scraping the webpage:', error);
-            await message.channel.send('Failed to scrape the webpage.');
-        }
-    }
+client.on(Events.MessageCreate, async message => {
+  if (message.author.bot) return;
+  if (await handleSsComMessage(message)) return;
 });
 
 client.login(TOKEN);

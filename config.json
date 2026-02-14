@@ -1,15 +1,30 @@
 {
   "ownerId": "217324558489747456",
-  "status": "Spooky Dog Season!",
+  "status": "New New Dog",
+  "ssScraperImageLimit": 10,
+  "enabled": {
+    "instagram": false,
+    "twitter": false,
+    "x": false,
+    "tiktok": false,
+    "vm.tiktok": false,
+    "reddit": false,
+    "youtube": false,
+    "youtu.be": false,
+    "threads": false,
+    "spotify": false
+  },
   "platform": {
-    "instagram": "instagramez.com",
+    "instagram": "kkinstagram.com",
     "twitter": "vxtwitter.com",
     "x": "fixvx.com",
     "tiktok": "tiktokez.com",
     "vm.tiktok": "vm.vxtiktok.com",
-    "reddit": "rxddit.com",
-    "youtube": "koutu.be",
-    "youtu.be": "koutu.be"
+    "reddit": "vxreddit.com",
+    "youtube": "yt.cdn.13373333.one",
+    "youtu.be": "yt.cdn.13373333.one",
+    "threads": "threadsez.com",
+    "spotify": "open.fxspotify.com"
   },
   "regexPatterns": {
     "instagram": "(https?:\\/\\/(?:www\\.)?instagram\\.com\\/\\S+)",
@@ -19,6 +34,12 @@
     "vm.tiktok": "(https?:\\/\\/(?:www\\.)?vm\\.tiktok\\.com\\/\\S+)",
     "reddit": "(https?:\\/\\/(?:www\\.)?reddit\\.com\\/\\S+)",
     "youtube": "(https?:\\/\\/(?:www\\.)?youtube\\.com\\/\\S+)",
-    "youtu.be": "(https?:\\/\\/(?:www\\.)?youtu\\.be\\/\\S+)"
-  }
+    "youtu.be": "(https?:\\/\\/(?:www\\.)?youtu\\.be\\/\\S+)",
+    "threads": "(https?:\\/\\/(?:www\\.)?threads\\.com\\/\\S+)",
+    "spotify": "(https?:\\/\\/(?:www\\.)?open\\.spotify\\.com\\/track\\/\\S+)"
+  },
+  "configRoleIds": [
+    "744163469787660309",
+    "437523132027502592"
+  ]
 }
