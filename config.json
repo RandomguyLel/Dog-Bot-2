@@ -2,29 +2,36 @@
   "ownerId": "217324558489747456",
   "status": "New New Dog",
   "ssScraperImageLimit": 10,
+  "converterRetryCooldownMs": 11000,
   "enabled": {
-    "instagram": false,
-    "twitter": false,
-    "x": false,
-    "tiktok": false,
-    "vm.tiktok": false,
-    "reddit": false,
+    "instagram": true,
+    "twitter": true,
+    "x": true,
+    "tiktok": true,
+    "vm.tiktok": true,
+    "reddit": true,
     "youtube": false,
     "youtu.be": false,
     "threads": false,
-    "spotify": false
+    "spotify": true,
+    "Facebook reels": true,
+    "Facebook reels 2": true,
+    "Facebook reels 3": true
   },
   "platform": {
-    "instagram": "kkinstagram.com",
+    "instagram": "oginstagram.com",
     "twitter": "vxtwitter.com",
-    "x": "fixvx.com",
+    "x": "fixupx.com",
     "tiktok": "tiktokez.com",
-    "vm.tiktok": "vm.vxtiktok.com",
+    "vm.tiktok": "vm.tiktokez.com",
     "reddit": "vxreddit.com",
     "youtube": "yt.cdn.13373333.one",
     "youtu.be": "yt.cdn.13373333.one",
     "threads": "threadsez.com",
-    "spotify": "open.fxspotify.com"
+    "spotify": "open.fxspotify.com",
+    "Facebook reels": "facebed.com",
+    "Facebook reels 2": "facebed.com",
+    "Facebook reels 3": "facebed.com"
   },
   "regexPatterns": {
     "instagram": "(https?:\\/\\/(?:www\\.)?instagram\\.com\\/\\S+)",
@@ -36,7 +43,10 @@
     "youtube": "(https?:\\/\\/(?:www\\.)?youtube\\.com\\/\\S+)",
     "youtu.be": "(https?:\\/\\/(?:www\\.)?youtu\\.be\\/\\S+)",
     "threads": "(https?:\\/\\/(?:www\\.)?threads\\.com\\/\\S+)",
-    "spotify": "(https?:\\/\\/(?:www\\.)?open\\.spotify\\.com\\/track\\/\\S+)"
+    "spotify": "(https?:\\/\\/(?:www\\.)?open\\.spotify\\.com\\/track\\/\\S+)",
+    "Facebook reels": "(https?:\\/\\/(?:www\\.)?facebook\\.com\\/share\\/v\\/\\S+)",
+    "Facebook reels 2": "(https?:\\/\\/(?:www\\.)?facebook\\.com\\/reel\\/\\S+)",
+    "Facebook reels 3": "https?:\\/\\/(?:www\\.)?facebook\\.com\\/share\\/r\\/\\S+"
   },
   "configRoleIds": [
     "744163469787660309",
