@@ -83,8 +83,9 @@ function getConverterRetryCooldownMs(cfg) {
 }
 
 function buildSafeConverterLinks(mediaUrl, originalUrl) {
-  const safeMediaUrl = String(mediaUrl).replace(/_/g, "\\_");
-  const safeOriginalUrl = String(originalUrl).replace(/_/g, "\\_");
+  const safeMediaUrl = String(mediaUrl).trim();
+  const safeOriginalUrl = String(originalUrl).trim();
+  // Keep both destinations wrapped so Discord markdown doesn't break on underscores.
   return `[Media](${safeMediaUrl}) | [Original post](<${safeOriginalUrl}>)`;
 }
 
